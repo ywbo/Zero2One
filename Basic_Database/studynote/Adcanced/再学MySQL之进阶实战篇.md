@@ -1,6 +1,8 @@
 
 
-# <font color='#b42222'>![](D:\WorkSpace\MyTest\Rosefinch\doc\进阶.png)MySQL进阶实战篇</font>
+# <font color='#b42222'>![](https://i.loli.net/2021/03/05/TLeMfQtJSknscdi.png)  再学MySQL进阶实战篇</font>
+
+​																																				           ——  2021.03.05  02:30    by    Fisher  
 
 ### <font color='#e6000b'>一、 MySQL视图机制</font>
 
@@ -12,7 +14,8 @@
 
 ##### <font color='#054fd2'>② 名称</font>
 
-VIEW
+-   VIEW
+
 
 ##### <font color='#054fd2'>③ 简介</font>
 
@@ -199,7 +202,7 @@ DROP VIEW 视图名称;
 
 - 	到此对于视图的创建和使用都比较清晰了，现在准备进一步认识视图的本质，前面我们反复说过，视图是一张虚拟表，是不带任何数据的，每次查询时只是从普通表中动态地获取数据并组合，只不过外表看起来像一张表罢了。其原理通过下图便一目了然：
 
-![E](D:\WorkSpace\MyTest\Rosefinch\doc\视图本质.png)
+![img](https://i.loli.net/2021/03/05/HjbyINXS5GksQdE.png)
 
 - 	事实上有些时候视图还会被用于限制用户对普通表的查询操作，对于这类用户只赋予对应视图的select操作权限，仅让他们只能读取特定的行或列的数据。这样我们也就不用直接使用数据库的权限设置限制行列的读取，同时也避免了权限细化的麻烦。
 
