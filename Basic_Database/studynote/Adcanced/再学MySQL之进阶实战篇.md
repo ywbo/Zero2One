@@ -1015,7 +1015,7 @@ SELECT * FROM table_name WHERE ... FOR UPDATE;
 
 -   UNDO：日志亦称为回滚端，在进行数据插入、更新、删除的情景下，保存变更前的数据，原理图如下：
 
-![image-20210309000128306](E:%5CPersonalWork%5CZero2One%5CGithub%5CZero2One%5CBasic_Database%5Cimgs%5C%E4%BA%8B%E5%8A%A1%E5%8E%9F%E7%90%86%E6%A6%82%E8%A6%81%E7%AE%80%E5%9B%BE.png)
+![事务原理概要](https://i.loli.net/2021/03/09/lVLOWYrFo1zepJj.png)
 
 ​		在表中保存了指向UNDO日志的指针，rollback执行时根据这个指针来获取旧数据并覆盖到表中，rollback执行完成后或者commit后UNDO日志将被删除。UNDO还有另外一种作用，当A用户正在更新数据时，还没提交，而B用户也需要使用该数据，这时不可能让B读取未提交的数据，因此会将存在UNDO表中的数据提供给B用户。这就是事务回滚的简单模型。
 
