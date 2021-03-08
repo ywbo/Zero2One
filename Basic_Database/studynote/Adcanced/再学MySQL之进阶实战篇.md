@@ -614,8 +614,110 @@ SHOW index FROM user \G;
 
 
 ### <font color='#e6000b'>五、 触发器</font>
+#### <font color='#ff6537'>1. 触发器的概念及语法</font>
+
+- 触发器可以简单理解一种特殊的存储过程，之前存储过程的变量定义及流程语句同样适合触发器，唯一不同的是我们只需要定义触发器，而不用手动调用触发器。从事件触发的角度来说，触发器编写的过程就是触发事件定义的过程，因为触发器定义好后会随着数据库操作命令的执行而触发，这些具体的操作是INSERT/UPDATE/DELETE。比如可以在user表中删除记录执行后，通过定义一个触发器把删除的数据自动添加到历史表中保存以便以后可以进行其他操作。创建触发器的语法如下：
+
+  ```mysql
+  CREATE TRIGGER trigger_name trigger_time
+  trigger_event ON tbl_name
+  FOR EACH ROW
+  BEGIN
+  trigger_stmt
+  END
+  ```
+
+  语法解释：
+
+  - trigger_name：触发器名称。自定义。
+  - trigger_time：触发时机。取值为<font color='#3dcb85'>***`BRFORE`***或者***`AFTER`***。</font>
+  - trigger_event：触发事件。取值为 <font color='#3dcb85'>***`INSERT`*** 、***`UPDATE`*** 或 ***`DELETE`***</font>；需要注意的是，这些命令并不一定是严格意义上的命令，因为像<font color='#3dcb85'>***`LOAD DATA`*** </font>和 <font color='#3dcb85'>***`REPLACE`*** </font>语句也能触发上述事件。<font color='#3dcb85'>LOAD DATA 语句用于将一个文件装入到一个数据表中，是一系列的 INSERT 操作。REPLACE 语句类似INSERT 语句，当表中有 primary key 或 unique 索引时，如果插入的数据和原来 primary key 或 unique 索引一致时，会先删除原来的数据，然后增加一条新数据，也就是说，一条 REPLACE 语句会等价于一条INSERT 语句或者一条 DELETE 语句和上一条 INSERT 语句。</font>
+  - tbl_name：表示在哪张表上建立触发器；
+  - trigger_stmt：触发器程序体，可以是一句SQL语句或者流程语句；
+  - FOR EACH ROW ： 在mysql中属于固定写法，指明触发器以行作为执行单位，也就是当用户执行删除命令删除3条数据，与删除动作相关的触发器也会被执行3次。
+
+#### <font color='#ff6537'>2. 创建触发器</font>
+
+- 在日常的数据库开发中，因业务需求，可能需要在插入更新删除时留下数据的日志，这时采用触发器来实现是个非常不错的选择，下面我们定义一个用户删除事件的触发器，当用户被删除后自动把被删除的数据添加到用户历史表user_history，历史用户表结构如下：
+
+```mysql
+-- 为了让字段更简洁，这里我们修改几个字段名称
+alter table user change username name varchar(32);
+
+alter table user change birthday birth datetime;
+
+-- user 表结构
+desc user;
+
+-- 历史表 user_history 其中updated字段为删除日期
+desc user_history;
+```
+
+- 触发器定义语句如下：
+
+```mysql
+DELIMITER
+-- 创建触发器
+create trigger trg_user_history after delete
+       on user for each row
+     begin
+      insert into user_history(uid,name,pinyin,birth,sex,address,updated)
+      values(OLD.id,OLD.name,OLD.pinyin,OLD.birth,OLD.sex,OLD.address,NOW());
+     end
+DELIMITER ;
+```
+
+- 上述sql中创建语句的形式与前面的存储过程或者存储函数都很类似，这里有点要注意的是，使用OLD/NEW关键字可以获取数据变更前后的记录，其中OLD用于AFTER时刻，而NEW用于BEFORE时刻的变更。如OLD.name表示从user表删除的记录的名称。INSERT操作一般使用NEW关键字，UPDATE操作一般使用NEW和OLD，而DELETE操作一般使用OLD。现在我们从user表删除一条数据，然后查看user_history表的数据。
+
+```mysql
+-- 删除user中id为60的用户数据
+delete from user where id =60;
+
+-- 查看历史表
+ select * from user_history;
+```
+
+- 显然我们定义的触发器已生效了。	
 
 
+
+#### <font color='#ff6537'>3. 查看触发器</font>
+
+- 如果需要查看定义好的触发器可以使用以下语句：
+
+  ```mysql
+  SHOW TRIGGERS [FROM schema_name];1
+  ```
+
+  - 其中，schema_name 即 Schema 的名称，在 MySQL 中 Schema 和 Database 是一样的，Schema指定为数据库名即可。
+
+  - ```mysql
+    mysql> SHOW TRIGGERS \G;
+    *************************** 1. row ***************************
+                 Trigger: trg_user_history --触发器名称
+                   Event: DELETE  --触发事件
+                   Table: user --触发器作用的表
+               Statement: begin
+    insert into user_history(uid,name,pinyin,birth,sex,address,updated)
+    values(OLD.id,OLD.name,OLD.pinyin,OLD.birth,OLD.sex,OLD.address,NOW());
+    end
+                  Timing: AFTER
+                 Created: 2017-04-21 09:27:56.58
+                sql_mode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+                 Definer: root@localhost
+    character_set_client: utf8
+    collation_connection: utf8_general_ci
+      Database Collation: utf8_general_ci
+    1 row in set (0.00 sec)
+    ```
+
+#### <font color='#ff6537'>4. 删除触发器</font>
+
+- 删除触发器可以使用以下语句：
+
+  ```mysql
+  DROP TRIGGER 触发器名称;
+  ```
 
 ### <font color='#e6000b'>六、 游标</font>
 
