@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="Admin" />
+        <module name="Component" />
+        <module name="DevModule" />
+        <module name="Common" />
+        <module name="module" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="Admin" target="1.8" />
+      <module name="Common" target="1.8" />
+      <module name="Component" target="1.8" />
+      <module name="DevModule" target="1.8" />
+      <module name="module" target="1.8" />
+      <module name="Vita" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="Admin" options="-parameters" />
+      <module name="Common" options="-parameters" />
+      <module name="Component" options="-parameters" />
+      <module name="DevModule" options="-parameters" />
+      <module name="Vita" options="-parameters" />
+      <module name="module" options="-parameters" />
+    </option>
+  </component>
+</project>

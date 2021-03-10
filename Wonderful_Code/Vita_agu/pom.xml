@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <name>Vita后台管理系统</name>
+    <description>搭建后台管理系统脚手架</description>
+
+    <groupId>com.agu</groupId>
+    <artifactId>vita</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>Admin</module>
+        <module>Common</module>
+        <module>Component</module>
+        <module>Module</module>
+        <module>DevModule</module>
+    </modules>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.4.3</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
+        <java.version>1.8</java.version>
+        <!-- shrio 权限管理框架 -->
+        <shrio.version>1.4.0</shrio.version>
+        <lombok.version>1.18.2</lombok.version>
+        <enchche.version>2.10.5</enchche.version>
+        <mysql.connector.version>8.0</mysql.connector.version>
+        <jsoup.version>1.11.3</jsoup.version>
+        <!-- shrio 模板视图权限标签扩展：component.thymeleaf -->
+        <thymeleaf-shrio.version>2.0.0</thymeleaf-shrio.version>
+        <!-- Excel工具框架版本：component.excel -->
+        <poi.version>4.0.0</poi.version>
+        <!-- jw批处理框架版本：component.jwt  -->
+        <jwt.version>3.4.0</jwt.version>
+        <!-- swagger2接口文档版本：component.swagger -->
+        <swagger.version>2.9.2</swagger.version>
+        <!-- swagger-knife4j接口文档页面：component.swagger.knife4j -->
+        <swagger.knife4j.version>2.0.1</swagger.knife4j.version>
+        <google.findbugs.version>3.0.1</google.findbugs.version>
+        <skipTests>true</skipTests>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <!-- spring data jpa 持久层框架 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- spring boot 缓存框架 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- mysql连接驱动 -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.connector.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- lombok语法糖 -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- ehcache缓存框架 -->
+        <dependency>
+            <groupId>net.sf.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
+            <version>${enchche.version}</version>
+        </dependency>
+
+        <!-- html解析工具，处理xss攻击 -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>${jsoup.version}</version>
+        </dependency>
+
+        <!-- swagger2接口文档 -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>${swagger.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>${swagger.version}</version>
+        </dependency>
+
+        <!-- knife4j（swagger-bootstrap-ui）接口文档界面 -->
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-spring-ui</artifactId>
+            <version>${swagger.knife4j.version}</version>
+        </dependency>
+
+        <!-- 解决编译时javax.annotation.mata.When不存在的问题 -->
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>annotations</artifactId>
+            <version>${google.findbugs.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
