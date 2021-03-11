@@ -3,41 +3,43 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.agu</groupId>
-	<artifactId>devmodule</artifactId>
-	<packaging>jar</packaging>
+	<groupId>com.agu.component.thymeleaf</groupId>
+	<artifactId>thymeleaf</artifactId>
 	<version>1.0.0</version>
-	<name>开发中心模块</name>
-	<description>Vita开发中心模块</description>
+	<name>thymeleaf</name>
+	<description>模板引擎</description>
 
 	<parent>
 		<groupId>com.agu</groupId>
-		<artifactId>vita</artifactId>
+		<artifactId>Component</artifactId>
 		<version>1.0.0</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.agu</groupId>
-			<artifactId>Common</artifactId>
-			<version>${project.version}</version>
+			<artifactId>common</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.agu.module</groupId>
 			<artifactId>system</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.agu.component</groupId>
-			<artifactId>shrio</artifactId>
-			<version>${project.version}</version>
-		</dependency>
 
+		<!--thymeleaf视图模板框架-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
+
+		<!--shiro模板视图权限标签扩展-->
+		<dependency>
+			<groupId>com.github.theborakompanioni</groupId>
+			<artifactId>thymeleaf-extras-shiro</artifactId>
+			<version>${thymeleaf-shiro.version}</version>
+		</dependency>
+
 	</dependencies>
 
 </project>

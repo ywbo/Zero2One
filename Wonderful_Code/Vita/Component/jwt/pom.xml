@@ -3,18 +3,19 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.agu</groupId>
-	<artifactId>devmodule</artifactId>
+	<groupId>com.agu.compoment.jwt</groupId>
+	<artifactId>jwt</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0.0</version>
-	<name>开发中心模块</name>
-	<description>Vita开发中心模块</description>
+	<name>jwt</name>
+	<description>组件：jwt模块</description>
 
 	<parent>
 		<groupId>com.agu</groupId>
-		<artifactId>vita</artifactId>
+		<artifactId>Component</artifactId>
 		<version>1.0.0</version>
 	</parent>
+
 
 	<dependencies>
 		<dependency>
@@ -22,21 +23,18 @@
 			<artifactId>Common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>com.agu.module</groupId>
 			<artifactId>system</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.agu.component</groupId>
-			<artifactId>shrio</artifactId>
-			<version>${project.version}</version>
-		</dependency>
 
+		<!-- jwt处理框架 -->
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
+			<version>${jwt.version}</version>
 		</dependency>
 	</dependencies>
 

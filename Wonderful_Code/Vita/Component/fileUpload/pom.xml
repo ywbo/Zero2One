@@ -3,16 +3,16 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.agu</groupId>
-	<artifactId>devmodule</artifactId>
+	<groupId>com.agu.component.fileUpload</groupId>
+	<artifactId>fileupload</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0.0</version>
-	<name>开发中心模块</name>
-	<description>Vita开发中心模块</description>
+	<name>fileupload</name>
+	<description>组件：文件上传</description>
 
 	<parent>
 		<groupId>com.agu</groupId>
-		<artifactId>vita</artifactId>
+		<artifactId>Component</artifactId>
 		<version>1.0.0</version>
 	</parent>
 
@@ -22,22 +22,21 @@
 			<artifactId>Common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>com.agu.module</groupId>
 			<artifactId>system</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.agu.component</groupId>
-			<artifactId>shrio</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>

@@ -3,40 +3,42 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.agu</groupId>
-	<artifactId>devmodule</artifactId>
+	<groupId>com.agu.component.shrio</groupId>
+	<artifactId>shrio</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0.0</version>
-	<name>开发中心模块</name>
-	<description>Vita开发中心模块</description>
+	<name>shrio</name>
+	<description>权限框架</description>
+
 
 	<parent>
 		<groupId>com.agu</groupId>
-		<artifactId>vita</artifactId>
+		<artifactId>component</artifactId>
 		<version>1.0.0</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.agu</groupId>
-			<artifactId>Common</artifactId>
-			<version>${project.version}</version>
+			<artifactId>common</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.agu.module</groupId>
 			<artifactId>system</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.agu.component</groupId>
-			<artifactId>shrio</artifactId>
-			<version>${project.version}</version>
-		</dependency>
 
+		<!--shiro权限管理框架-->
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-spring</artifactId>
+			<version>${shiro.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-ehcache</artifactId>
+			<version>${shiro.version}</version>
 		</dependency>
 	</dependencies>
 

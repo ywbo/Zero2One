@@ -3,12 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.agu</groupId>
-	<artifactId>devmodule</artifactId>
+	<groupId>com.agu.component.actionlog</groupId>
+	<artifactId>actionlog</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0.0</version>
-	<name>开发中心模块</name>
-	<description>Vita开发中心模块</description>
+	<name>actionLog</name>
+	<description>Vita组件：行为日志记录</description>
 
 	<parent>
 		<groupId>com.agu</groupId>
@@ -22,21 +22,17 @@
 			<artifactId>Common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>com.agu.module</groupId>
 			<artifactId>system</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>com.agu.component</groupId>
 			<artifactId>shrio</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
