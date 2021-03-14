@@ -3,12 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.agu.component.shrio</groupId>
+	<groupId>com.agu.component</groupId>
 	<artifactId>shrio</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0</version>
 	<name>shrio</name>
-	<description>权限框架</description>
+	<version>1.0.0</version>
+	<description>组件：Shrio权限框架</description>
 
 
 	<parent>

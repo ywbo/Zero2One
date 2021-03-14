@@ -2,6 +2,7 @@ package com.agu.admin.system.controller;
 
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 
 /**
  * @ClassName LoginController
@@ -12,8 +13,9 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class LoginController implements ErrorController {
 
+
     @GetMapping("/login")
-    public String toString(){
+    public String toString(Model model){
         return null;
     }
 

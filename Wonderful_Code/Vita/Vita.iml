@@ -64,7 +64,7 @@
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-starter-cache:2.4.3" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-context-support:5.3.4" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.springframework.boot:spring-boot-devtools:2.4.3" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Maven: mysql:mysql-connector-java:8.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: mysql:mysql-connector-java:8.0.15" level="project" />
     <orderEntry type="library" name="Maven: org.projectlombok:lombok:1.18.2" level="project" />
     <orderEntry type="library" name="Maven: net.sf.ehcache:ehcache:2.10.5" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.30" level="project" />

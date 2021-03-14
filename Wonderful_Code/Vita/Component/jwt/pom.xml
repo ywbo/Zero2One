@@ -3,16 +3,15 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.agu.compoment.jwt</groupId>
+	<groupId>com.agu.component</groupId>
 	<artifactId>jwt</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0</version>
 	<name>jwt</name>
 	<description>组件：jwt模块</description>
 
 	<parent>
 		<groupId>com.agu</groupId>
-		<artifactId>Component</artifactId>
+		<artifactId>component</artifactId>
 		<version>1.0.0</version>
 	</parent>
 
@@ -20,7 +19,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.agu</groupId>
-			<artifactId>Common</artifactId>
+			<artifactId>common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

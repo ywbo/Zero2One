@@ -3,15 +3,15 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.agu.module.system</groupId>
+	<groupId>com.agu.module</groupId>
 	<artifactId>system</artifactId>
-	<version>1.0.0</version>
+	<packaging>jar</packaging>
 	<name>system</name>
 	<description>Demo project for Spring Boot</description>
 
 	<parent>
 		<groupId>com.agu</groupId>
-		<artifactId>Module</artifactId>
+		<artifactId>module</artifactId>
 		<version>1.0.0</version>
 	</parent>
 
@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>com.agu</groupId>
 			<artifactId>common</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.agu.component</groupId>

@@ -3,15 +3,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.agu.component.thymeleaf</groupId>
+	<groupId>com.agu.component</groupId>
 	<artifactId>thymeleaf</artifactId>
-	<version>1.0.0</version>
 	<name>thymeleaf</name>
-	<description>模板引擎</description>
+	<description>组件：模板引擎</description>
 
 	<parent>
 		<groupId>com.agu</groupId>
-		<artifactId>Component</artifactId>
+		<artifactId>component</artifactId>
 		<version>1.0.0</version>
 	</parent>
 
@@ -19,7 +18,7 @@
 		<dependency>
 			<groupId>com.agu</groupId>
 			<artifactId>common</artifactId>
-			<version>1.0.0</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.agu.module</groupId>

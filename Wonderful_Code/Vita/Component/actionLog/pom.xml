@@ -3,10 +3,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.agu.component.actionlog</groupId>
+	<groupId>com.agu.component</groupId>
 	<artifactId>actionlog</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0</version>
 	<name>actionLog</name>
 	<description>Vita组件：行为日志记录</description>
 
@@ -19,7 +18,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.agu</groupId>
-			<artifactId>Common</artifactId>
+			<artifactId>common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

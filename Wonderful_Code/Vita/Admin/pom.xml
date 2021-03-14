@@ -3,12 +3,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.agu</groupId>
 	<artifactId>admin</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0</version>
 	<name>后台管理模块</name>
-	<description>Vita后台管理模块</description>
 
 	<parent>
 		<groupId>com.agu</groupId>
@@ -19,12 +16,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.agu</groupId>
-			<artifactId>Common</artifactId>
+			<artifactId>common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.agu</groupId>
-			<artifactId>DevModule</artifactId>
+			<artifactId>devmodule</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -49,9 +46,25 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.thymeleaf</groupId>
+			<artifactId>thymeleaf</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.agu.component</groupId>
 			<artifactId>fielUpload</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
 		</dependency>
 	</dependencies>
 

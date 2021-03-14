@@ -3,12 +3,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.agu</groupId>
 	<artifactId>common</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0</version>
 	<name>公共模块</name>
-	<description>Vita公共模块</description>
 
 	<parent>
 		<groupId>com.agu</groupId>
