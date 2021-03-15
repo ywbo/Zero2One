@@ -3,15 +3,17 @@ package com.agu.module.system.service;
 import java.util.List;
 import java.util.Set;
 
+import com.agu.common.enums.StatusEnum;
+import com.agu.module.system.domain.Role;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 功能描述
+ * 角色接口
  *
- * @author yWX983890
+ * @author yuwenbo
  * @since 2021-03-15
  */
 public interface IRoleService {
