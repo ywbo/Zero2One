@@ -37,7 +37,7 @@
 
 		<dependency>
 			<groupId>com.agu.component</groupId>
-			<artifactId>actionLog</artifactId>
+			<artifactId>actionlog</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -51,7 +51,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.agu.component</groupId>
-			<artifactId>fielUpload</artifactId>
+			<artifactId>fielupload</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
