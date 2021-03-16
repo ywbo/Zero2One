@@ -135,13 +135,13 @@ public class ResetLog {
      * 获取用户名
      */
     public String getUsername(){
-        return ShiroUtil.getSubject().getUsername();
+        return ShrioUtil.getSubject().getUsername();
     }
     /**
      * 获取用户昵称
      */
     public String getNickname(){
-        return ShiroUtil.getSubject().getNickname();
+        return ShrioUtil.getSubject().getNickname();
     }
     /**
      * 获取当前时间

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 
 import com.agu.module.system.service.IRoleService;
+import org.springframework.stereotype.Service;
 
 /**
  * 角色接口实现类
@@ -17,6 +18,7 @@ import com.agu.module.system.service.IRoleService;
  * @author yuwenbo
  * @since 2021-03-15
  */
+@Service
 public class RoleServiceImpl implements IRoleService {
 
     @Override

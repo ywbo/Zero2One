@@ -1,12 +1,15 @@
 package com.agu.admin.system.controller;
 
 import com.agu.common.config.properties.ProjectProperties;
+import com.agu.common.data.URL;
 import com.agu.common.enums.ResultEnum;
 import com.agu.common.exception.ResultException;
+import com.agu.common.utils.ResultVoUtil;
 import com.agu.common.utils.SpringContextUtil;
 import com.agu.common.vo.ResultVo;
 import com.agu.component.actionlog.action.UserAction;
 import com.agu.component.actionlog.annotation.ActionLog;
+import com.agu.component.shrio.ShrioUtil;
 import com.agu.module.system.domain.User;
 import com.agu.module.system.service.IRoleService;
 import org.apache.shiro.SecurityUtils;
@@ -34,7 +37,6 @@ import javax.xml.ws.Action;
  **/
 @Controller
 public class LoginController implements ErrorController {
-
 
     @Autowired
     private IRoleService roleService;
@@ -92,7 +94,7 @@ public class LoginController implements ErrorController {
             subject.login(token);
 
             // 判断是否拥有后台角色
-            User user = ShiroUtil.getSubject();
+            User user = ShrioUtil.getSubject();
             if (roleService.existsUserOk(user.getId())) {
                 return ResultVoUtil.success("登录成功", new URL("/"));
             } else {
