@@ -49,7 +49,7 @@ public class LoginController implements ErrorController {
     @GetMapping("/login")
     public String toString(Model model){
         ProjectProperties properties = SpringContextUtil.getBean(ProjectProperties.class);
-        model.addAttribute("isCaptcha", properties.isCaptchaOpen());
+        model.addAttribute("isCaptcha", properties.isCaptcheOpen());
         return "/login";
     }
 
