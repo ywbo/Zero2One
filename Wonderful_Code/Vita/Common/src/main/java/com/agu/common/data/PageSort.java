@@ -51,7 +51,8 @@ public class PageSort {
         Integer pageSize = HttpServletUtil.getParameterInt("size", pageSizeDef);
         String orderByColumn = HttpServletUtil.getParameter("orderByColumn", orderByColumnDef);
         String direction = HttpServletUtil.getParameter("isAsc", sortDirection.toString());
-        Sort sort = new Sort(Sort.Direction.fromString(direction), orderByColumn);
+        //Sort sort = new Sort(Sort.Direction.fromString(direction), orderByColumn);
+        Sort sort = null;
         return PageRequest.of(pageIndex-1, pageSize, sort);
     }
 }

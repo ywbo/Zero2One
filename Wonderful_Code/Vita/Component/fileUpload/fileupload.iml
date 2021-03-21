@@ -36,6 +36,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="common" />
+    <orderEntry type="library" name="Maven: cn.hutool:hutool-all:5.6.1" level="project" />
     <orderEntry type="module" module-name="system" />
     <orderEntry type="module" module-name="excel" />
     <orderEntry type="library" name="Maven: org.apache.poi:poi-ooxml:4.0.0" level="project" />

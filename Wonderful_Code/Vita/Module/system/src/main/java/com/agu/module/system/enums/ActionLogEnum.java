@@ -1,5 +1,6 @@
 package com.agu.module.system.enums;
 
+import com.agu.common.enums.ResultEnum;
 import lombok.Getter;
 
 /**
@@ -19,12 +20,12 @@ public enum ActionLogEnum {
     /**
      * 用户登录日志行为
      */
-    LOGIN((byte) 2, "登陆");
+    //LOGIN((byte) 2, "登陆");
 
     /**
      * 系统日志行为（报错信息）
      */
-    SYSTEM((byte) 3, "系统");
+    //SYSTEM((byte) 3, "系统");
 
     private Byte code;
 

@@ -19,6 +19,8 @@ import javax.persistence.Table;
 
 import com.agu.common.enums.StatusEnum;
 import com.agu.common.utils.StatusUtil;
+import com.agu.component.excel.annotation.Excel;
+import com.agu.component.excel.enums.ExcelType;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
@@ -88,3 +90,4 @@ public class User implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     @JsonIgnore
     private Set<Role> roles = new HashSet<>(0);
+}

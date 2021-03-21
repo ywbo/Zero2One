@@ -9,9 +9,7 @@ import com.agu.component.shrio.ShrioUtil;
 import lombok.Data;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.omg.CORBA.OBJ_ADAPTER;
 
-import javax.jws.Oneway;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
