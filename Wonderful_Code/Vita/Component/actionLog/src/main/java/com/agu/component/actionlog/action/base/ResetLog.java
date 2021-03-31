@@ -64,6 +64,14 @@ public class ResetLog {
     }
 
     /**
+     * 判断ResultVo状态码是否为成功，且设置是否记录日志
+     */
+    public boolean isSuccessRecord(){
+        return record = retValue instanceof ResultVo &&
+                ((ResultVo) retValue).getCode().equals(ResultEnum.SUCCESS.getCode());
+    }
+    
+    /**
      * 获取切入点方法指定的参数名
      * @param name
      * @return
