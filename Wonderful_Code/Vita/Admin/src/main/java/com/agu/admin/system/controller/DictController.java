@@ -1,6 +1,8 @@
 package com.agu.admin.system.controller;
 
 
+import com.agu.component.thymeleaf.utility.DictUtil;
+import com.agu.module.system.domain.Dict;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -26,8 +28,6 @@ import com.agu.component.actionlog.action.StatusAction;
 import com.agu.component.actionlog.annotation.ActionLog;
 import com.agu.component.actionlog.annotation.EntityParam;
 import com.agu.module.system.service.IDictService;
-
-import cn.hutool.core.lang.Dict;
 
 /**
  * @author yuwenbo

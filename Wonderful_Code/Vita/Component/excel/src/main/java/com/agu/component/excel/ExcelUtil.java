@@ -22,7 +22,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import com.agu.common.utils.EhcacheeUtil;
+import com.agu.common.utils.EhcacheUtil;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.BorderStyle;
@@ -49,7 +49,6 @@ import com.agu.component.excel.enums.ExcelType;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.lang.Assert;
-import cn.hutool.http.server.HttpServerResponse;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
 
@@ -62,7 +61,7 @@ import net.sf.ehcache.Element;
 public class ExcelUtil {
 
     private static int dataRow = 2;
-    private static Cache dictCache = EhcacheeUtil.getDictCache();
+    private static Cache dictCache = EhcacheUtil.getDictCache();
 
     /**
      * 获取通用样式
