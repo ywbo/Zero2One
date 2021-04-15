@@ -1,6 +1,12 @@
 # 数据库之再遇Redis
 
-## 一、概述
+> 时间：<font color='#1cb569'>***2021 年 04 月 14 日***</font>
+>
+> 分类：<font color='#1cb569'>***数 据 库***</font>
+
+------
+
+## :fu: 一、概述
 
 > 	Redis 是速度非常快的<font style="color:red">**`非关系型（NoSQL）内存键值数据库`**</font>。可以存储键和物种不同类型的值之间的映射。
 >
@@ -8,7 +14,7 @@
 >	
 > Redis 支持很多特性，例如将内存中的数据持久化到硬盘中，使用复制来扩展读性能，使用分片来扩展写性能。
 
-## 二、数据类型
+## :round_pushpin: 二、数据类型
 
 | 数据类型 | 可以存储的值           | 操作                                                         |
 | :------- | :--------------------- | ------------------------------------------------------------ |
@@ -20,7 +26,7 @@
 
 ### 1. STRING
 
-![img](D:\ywbWork\StudyNote\三省吾身\数据库\accesst\String.png)
+![img](.\accesst\String.png)
 
 ```powershell
 > set hello world
@@ -35,7 +41,7 @@ OK
 
 ### 2. LIST
 
-![img](D:\ywbWork\StudyNote\三省吾身\数据库\accesst\List.png)
+![img](.\accesst\List.png)
 
 ```powershell
 > rpush list-key item
@@ -63,7 +69,7 @@ OK
 
 ### 3. SET
 
-![img](D:\ywbWork\StudyNote\三省吾身\数据库\accesst\Set.png)
+![img](.\accesst\Set.png)
 
 ```powershell
 > sadd set-key item
@@ -97,7 +103,7 @@ OK
 
 ### 4. HASH
 
-![img](D:\ywbWork\StudyNote\三省吾身\数据库\accesst\Hash.png)
+![img](.\accesst\Hash.png)
 
 ```powershell
 > hset hash-key sub-key1 value1
@@ -128,7 +134,7 @@ OK
 
 ### 5. ZSET
 
-![img](D:\ywbWork\StudyNote\三省吾身\数据库\accesst\Zset.png)
+![img](.\accesst\Zset.png)
 
 ```powershell
 > zadd zset-key 728 member1
@@ -158,7 +164,7 @@ OK
 2) "982"
 ```
 
-## 三、数据结构
+## :bell: 三、数据结构
 
 ### 1. 字典
 
@@ -270,11 +276,11 @@ int dictRehash(dict *d, int n) {
 
 跳跃表是基于多指针有序链表实现的，可以看成多个有序链表。
 
-![img](D:\ywbWork\StudyNote\三省吾身\数据库\accesst\tiaoyuebiao1.png)
+![img](.\accesst\tiaoyuebiao1.png)
 
 在查找时，从上层指针开始查找，找到对应的区间之后再到下一层去查找。下图演示了查找 22 的过程。
 
-![img](D:\ywbWork\StudyNote\三省吾身\数据库\accesst\tiaoyuebiao2.png)
+![img](.\accesst\tiaoyuebiao2.png)
 
 <font color='#1cb569'>与红黑树等平衡树相比，跳跃表具有以下优点：</font>
 
@@ -282,7 +288,7 @@ int dictRehash(dict *d, int n) {
 - <font color='#1cb569'>更容易实现；</font>
 - <font color='#1cb569'>支持无锁操作。</font>
 
-## 四、使用场景 :coffee:
+## :coffee: 四、使用场景
 
 ### 1. 计数器
 
@@ -319,7 +325,7 @@ int dictRehash(dict *d, int n) {
 - Set 可以实现交集、并集等操作，从而实现共同好友等功能。
 - ZSet 可以实现有序性操作，从而实现排行榜等功能。
 
-## 五、Redis与Memcached :dart:
+## :dart: 五、Redis与Memcached 
 
 两者都是非关系型内存键值数据库，主要有以下不同：
 
@@ -367,7 +373,7 @@ Redis 具体有 6 种淘汰策略：
 - 使用 Redis 缓存数据时，为了提高缓存命中率，需要保证缓存数据都是热点数据。可以将内存最大使用量设置为热点数据占用的内存量，然后启用 allkeys-lru 淘汰策略，将最近最少使用的数据淘汰。
 - Redis 4.0 引入了 volatile-lfu 和 allkeys-lfu 淘汰策略，LFU 策略通过统计访问频率，将访问频率最少的键值对淘汰。
 
-## 八、持久化
+## :droplet: 八、持久化
 
 Redis 是内存型数据库，为了保证数据在断电后不会丢失，需要将内存中的数据持久化到硬盘上。
 
@@ -396,7 +402,7 @@ Redis 是内存型数据库，为了保证数据在断电后不会丢失，需�
 
 :point_right: <font color='#e6000b'>随着服务器写请求增多，AOF文件会越来越大。Redis 提供了一种将 AOF 重写的特性，能够去除 AOF 文件命令中的冗余写命令。</font>
 
-## 九、事务
+## :dart: 九、事务
 
 ### 1. Redis 事务
 
@@ -477,7 +483,7 @@ QUEUED
 | [UNWATCH](https://www.runoob.com/redis/transactions-unwatch.html) | 取消 WATCH 命令对所有 key 的监视。                           |
 | [WATCH key [key ...\]](https://www.runoob.com/redis/transactions-watch.html) | 监视一个(或多个) key ，如果在事务执行之前这个(或这些) key 被其他命令所改动，那么事务将被打断。 |
 
-## 十、事件
+## :sweat_drops: 十、事件
 
 Redis 服务器是一个事件驱动程序。
 
@@ -486,7 +492,7 @@ Redis 服务器是一个事件驱动程序。
 - 服务器通过[套接字(Socket)](https://blog.csdn.net/luzhensmart/article/details/81838193)与客户端或者其它服务器进行通信，文件事件就是对套接字操作的抽象。
 - Redis 基于 Reactor 模式开发了自己的网络事件处理器，使用 I/O 多路复用程序来同时监听多个套接字，并将到达的事件传送给文件事件分派器，分派器会根据套接字产生的事件类型调用相应的事件处理器。
 
-![img](D:\ywbWork\StudyNote\三省吾身\数据库\accesst\wenjianshijian.png)
+![img](.\accesst\wenjianshijian.png)
 
 	:mag_right: [什么时套接字(Socket)](https://blog.csdn.net/luzhensmart/article/details/81838193)
 	
@@ -541,7 +547,7 @@ def main():
 
 从事件处理的角度来看，服务器运行流程如下： 
 
-![img](D:\ywbWork\StudyNote\三省吾身\数据库\accesst\shijiandiaodu.png)
+![img](.\accesst\shijiandiaodu.png)
 
 ## 十一、复制
 
@@ -560,9 +566,9 @@ def main():
 
 	随着负载不断上升，主服务器可能无法很快地更新所有从服务器，或者重新连接和重新同步从服务器将导致系统超载。为了解决这个问题，可以创建一个中间层来分担主服务器的复制工作。中间层的服务器是最上层服务器的从服务器，又是最下层服务器的主服务器。
 
-![img](D:\ywbWork\StudyNote\三省吾身\数据库\accesst\zhuconglian.png)
+![img](.\accesst\zhuconglian.png)
 
-## 十二、Sentinel（哨兵模式）
+## :cop: 十二、Sentinel（哨兵模式）
 
 Sentinel（哨兵）可以监听集群中的服务器，并在主服务器进入下线状态时，自动从从服务器中选举出新的主服务器。
 
@@ -572,21 +578,21 @@ Sentinel(哨兵)是用于监控redis集群中Master状态的工具，是Redis �
 
 sentinel可以让redis实现主从复制，当一个集群中的master失效之后，sentinel可以选举出一个新的master用于自动接替master的工作，集群中的其他redis服务器自动指向新的master同步数据。一般建议sentinel采取奇数台，防止某一台sentinel无法连接到master导致误切换。其结构如下:
 
-![在这里插入图片描述](D:\ywbWork\StudyNote\三省吾身\数据库\accesst\Sentinel.png)
+![在这里插入图片描述](.\accesst\Sentinel.png)
 
 Redis-Sentinel是Redis官方推荐的高可用性(HA)解决方案，当用Redis做Master-slave的高可用方案时，假如master宕机了，Redis本身(包括它的很多客户端)都没有实现自动进行主备切换，而Redis-sentinel本身也是一个独立运行的进程，它能监控多个master-slave集群，发现master宕机后能进行自动切换。Sentinel由一个或多个Sentinel 实例 组成的Sentinel 系统可以监视任意多个主服务器，以及这些主服务器属下的所有从服务器，并在被监视的主服务器进入下线状态时，自动将下线主服务器属下的某个从服务器升级为新的主服务器。
 
 例如下图所示：
 
-![在这里插入图片描述](D:\ywbWork\StudyNote\三省吾身\数据库\accesst\Sentinel_01.png)
+![在这里插入图片描述](.\accesst\Sentinel_01.png)
 
 在Server1 掉线后：
 
-![在这里插入图片描述](D:\ywbWork\StudyNote\三省吾身\数据库\accesst\Sentinel_02.png)
+![在这里插入图片描述](.\accesst\Sentinel_02.png)
 
 升级Server2 为新的主服务器：
 
-![在这里插入图片描述](D:\ywbWork\StudyNote\三省吾身\数据库\accesst\Sentinel_03.png)
+![在这里插入图片描述](.\accesst\Sentinel_03.png)
 
 ------------------------------------------------
 :mag_right: [Sentinel（哨兵模式）详细介绍](https://blog.csdn.net/weixin_45572139/article/details/106295494)
@@ -609,7 +615,7 @@ Redis-Sentinel是Redis官方推荐的高可用性(HA)解决方案，当用Redis�
 - 代理分片：将客户端请求发送到代理上，由代理转发请求到正确的节点上。
 - 服务器分片：Redis Cluster。
 
-## 十四、缓存穿透，缓存击穿，缓存雪崩等问题解剖分析
+## :cyclone: 十四、缓存穿透，缓存击穿，缓存雪崩等问题解剖分析
 
 ### 1. 概念初识
 
@@ -789,7 +795,7 @@ public object GetProductListNew() {
 
 ------
 
-## 十五、Redis 常用命令
+## :point_right: 十五、Redis 常用命令
 
 ### 1. 连接操作命令
 
