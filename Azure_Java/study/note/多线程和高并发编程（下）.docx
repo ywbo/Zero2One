@@ -1,0 +1,1312 @@
+/*
+为什么使用while 而不是使用 if ？？？
+在与wait()的配合中，百分之99的程序都是与while而不是if结合使用。多线程情况下 while避免线程被唤醒时，判断条件发生变化
+上述代码中，在容器已满的情况下，put方法会wait等待，当容器中的元素被消费者消费了一部分，就会唤醒所有put方法，
+put方法会继续向下执行，直接执行list.add(t)，那么多个生产者线程执行list.add() 就有可能出现数据一致性的问题。
+如果使用while则会循环判断，就避免了这些问题。
+不是有锁吗？为什么会需要循环判断？
+wait之后，锁就会失去，再次被唤醒时，并且得到锁之后，**是从list.add()开始执行的**，会无判断直接加入到容器中。
+为什么调用 notifyAll 而不是 notify ？
+因为notify是叫醒一个线程，有可能再次叫醒一个生产者线程，此时生产者线程会wait，程序就死了；如果notifyAll的话，当生产者wait时，消费者线程会启动
+ */
+使用Lock和Condition可以精确的唤醒某些线程
+public class MyContainer2<T> {
+    private final LinkedList<T> list = new LinkedList<>();
+    private final int MAX = 10;
+    private int count = 0;
+
+    private Lock lock = new ReentrantLock();
+    private Condition producer = lock.newCondition();
+    private Condition consumer = lock.newCondition();
+
+    public void put(T t) {
+        lock.lock();
+        try {
+            while (MAX == count) {
+                producer.await();   // 如果满了生产者等待
+            }
+            list.add(t);
+            ++count;
+            consumer.signalAll();    // 通知消费者进行消费
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public T get() {
+        T t = null;
+        lock.lock();
+        try {
+            while (list.size() == 0) {
+                consumer.await();  // 如果空了消费者等待
+            }
+            t = list.removeFirst();
+            count--;
+            producer.signalAll();    // 通知生产者生产
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
+        }
+        return t;
+    }
+
+    public static void main(String[] args) {
+        MyContainer2<String> c = new MyContainer2<>();
+        // 启动消费者线程
+        for (int i = 0; i < 10; i++) {
+            new Thread(() -> {
+                for (int j = 0; j < 5; j++) {
+                    System.out.println(c.get());
+                }
+            }, "c_" + i ).start();
+        }
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+// 启动生产者线程
+        for (int i = 0; i < 2; i++) {
+            new Thread(()->{
+                for (int j = 0; j < 2; j++) {
+                    c.put(Thread.currentThread().getName() + " " + j);
+                }
+            }, "p_" + i).start();
+        }
+    }
+}
+
+Object的wait、notify与Condition的区别？
+从整体上看，
+Object的wait、notify是与对象监视器配合完成线程间的等待/通知机制，是java底层级别的；
+而Condition是与Lock配合完成等待通知机制，是语言级别的，具有更高的可控制性和扩展性。
+（1）Condition能够支持不响应中断，而Object提供的wait方法不支持；
+（2）Condition支持多个等待队列，而Object只能支持一个；
+（3）Condition支持设置超时时间，而Object不支持。
+
+一个lock可以持有多个等待队列。而在之前利用Object的方式实际上是指在**对象Object对象监视器上只能拥有一个同步队列和一个等待队列，而并发包中的Lock拥有一个同步队列和多个等待队列。
+
+详解Condition的await和signal等待/通知机制：https://blog.csdn.net/cottonrose_orange/article/details/104500532
+
+AQS原理
+AQS：AbstractQuenedSynchronizer抽象的队列式同步器。是除了java自带的synchronized关键字之外的锁机制。
+AQS的全称为（AbstractQueuedSynchronizer），这个类在java.util.concurrent.locks包
+
+AQS的核心思想是，如果被请求的共享资源空闲，则将当前请求资源的线程设置为有效的工作线程，并将共享资源设置为锁定状态，如果被请求的共享资源被占用，那么就需要一套线程阻塞等待以及被唤醒时锁分配的机制，这个机制AQS是用CLH队列锁实现的，即将暂时获取不到锁的线程加入到队列中。
+CLH（Craig，Landin，and Hagersten）队列是一个虚拟的双向队列，虚拟的双向队列即不存在队列实例，仅存在节点之间的关联关系。
+AQS是将每一条请求共享资源的线程封装成一个CLH锁队列的一个结点（Node），来实现锁的分配。
+
+AQS是基于CLH队列，用volatile修饰共享变量state，线程通过CAS去改变状态符，成功则获取锁成功，失败则进入等待队列，等待被唤醒。
+
+**注意：AQS是自旋锁：**在等待唤醒的时候，经常会使用自旋（while(!cas())）的方式，不停地尝试获取锁，直到被其他线程获取成功
+
+实现了AQS的锁有：自旋锁、互斥锁、读锁写锁、条件产量、信号量、栅栏都是AQS的衍生物
+AQS实现的具体方式如下：
+ 
+
+
+6.5、ThreadLocal
+线程局部变量，如果想要共享变量不可见，就需要使用ThreadLocal
+public class ThreadLocal1 {
+    /*volatile*/ static Person p = new Person();
+    public static void main(String[] args) {
+        new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            // 在加与不加volatile的情况下，这句话打印的值分别是？ 
+// 答：不写volatile有可能发生可见性问题
+            System.out.println(p.name);
+        }).start();
+
+        new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            p.name = "lisi";
+        }).start();
+    }
+
+    static class Person {
+        String name = "zhangsan";
+    }
+}
+使用ThreadLocal
+public class ThreadLocal2 {
+
+    static ThreadLocal<Person> p = new ThreadLocal<>();
+
+    public static void main(String[] args) {
+        new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            // 2. 虽然threadLocal是共享变量，但是取不到其他线程放入的值，所以此处为null
+            System.out.println(p.get());
+        }).start();
+
+        new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            // 1. 往线程局部变量放入一个person
+            p.set(new Person());
+        }).start();
+    }
+
+    static class Person {
+        String name = "zhangsan";
+    }
+}
+/*
+ThreadLocal：使用空间换时间  效率更高
+线程同步：使用时间换空间
+    ThreadLocal可能会导致内存泄漏
+*/
+ThreadLocal类中，有一个静态内部类——ThreadLocalMap，虽然名字有Map，但并没有实现java的Map接口，其内部自定义的存储实体Entry类，继承了弱引用类WeakReference，以ThreadLocal的弱引用对象作为Entry的key，实际要存储的T类型对象，作为value。内存中的结构如下图：
+ 
+ 
+首先，我们先了解一下什么是弱引用？
+
+弱引用一般是用来描述非必需对象的，被弱引用关联的对象只能生存到下一次垃圾收集发生之前。当垃圾收集器工作时，无论当前内存是否足够，都会回收掉只被弱引用关联的对象。
+实际开发中，当我们不需要 threadlocal 后，为了 GC 将 threadlocal 变量置为 null，没有任何强引用指向堆中的 threadlocal 对象时，堆中的 threadlocal 对象将会被 GC 回收，假设现在 Key 持有的是 threadlocal 对象的强引用，如果当前线程仍然在运行，那么从当前线程一直到 threadlocal 对象还是存在强引用，由于当前线程仍在运行的原因导致 threadlocal 对象无法被 GC，这就发生了内存泄漏。相反，弱引用就不存在此问题，当栈中的 threadlocal 变量置为 null 后，堆中的 threadlocal 对象只有一个 Key 的弱引用关联，下一次 GC 的时候堆中的 threadlocal 对象就会被回收，使用弱引用对于 threadlocal 对象而言是不会发生内存泄漏的。
+
+那么，第二个问题来了，是不是 Key 持有的是 threadlocal 对象的弱引用就一定不会发生内存泄漏呢？
+
+结论是：如果你使用不当还是有可能发生内存泄露，但是这里发生内存泄漏的地方和上面不同。
+
+当 threadlocal 使用完后，将栈中的 threadlocal 变量置为 null，threadlocal 对象下一次 GC 会被回收，那么 Entry 中的与之关联的弱引用 key 就会变成 null，如果此时当前线程还在运行，那么 Entry 中的 key 为 null 的 Value 对象并不会被回收（存在强引用），这就发生了内存泄漏，当然这种内存泄漏分情况，如果当前线程执行完毕会被回收，那么 Value 自然也会被回收，但是如果使用的是线程池呢，线程跑完任务以后放回线程池（线程没有销毁，不会被回收），Value 会一直存在，这就发生了内存泄漏。
+
+如何更好的降低内存泄漏的风险呢？
+ThreadLocal 为了降低内存泄露的可能性，在 set，get，remove 的时候都会清除此线程 ThreadLocalMap 里 Entry 数组中所有 Key 为 null 的 Value。所以，当前线程使用完 threadlocal 后，我们可以通过调用 ThreadLocal 的 remove 方法进行清除从而降低内存泄漏的风险。
+
+
+ThreadLocal为什么要用弱引用和内存泄露问题:
+https://blog.csdn.net/tmr1016/article/details/100141446
+https://segmentfault.com/a/1190000022704085
+
+最常见的ThreadLocal使用场景为：数据库连接管理、Session管理、多模块之间传递对象上下文等。
+
+微服务中的使用：org.apache.servicecomb.swagger.invocation.context.ContextUtils.ContextUtils()
+6.6、售票问题
+有N张火车票，每张票都有一个编号，同时有10个窗口对外售票，请写一个模拟程序
+public class TicketSeller1 {
+
+    static List<String> tickets = new ArrayList<>();
+
+    static {
+        for (int i = 0; i < 1000; i++) {
+            tickets.add("票-" + i);
+        }
+    }
+
+    public static void main(String[] args) {
+        for (int i = 0; i < 10; i++) {
+            new Thread(() -> {
+                while (tickets.size() > 0) {
+                    System.out.println("销售了：" + tickets.remove(0));
+                }
+            }).start();
+        }
+    }
+}
+/*
+	线程不同步
+*/
+使用Vector同步容器替换List容器
+public class TicketSeller2 {
+
+    static Vector<String> tickets = new Vector<>();
+
+    static {
+        for (int i = 0; i < 1000; i++) {
+            tickets.add("票-" + i);
+        }
+    }
+
+    public static void main(String[] args) {
+        for (int i = 0; i < 10; i++) {
+            new Thread(() -> {
+                while (tickets.size() > 0) {
+                    // 将问题方法，睡1s
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println("销售了：" + tickets.remove(0));  // remove是原子性的
+                }
+            }).start();
+        }
+    }
+}
+/*
+     依然不能解决问题，判断和操作依然是分离操作，不是原子操作
+ */
+使用Synchronized：
+public class TicketSeller3 {
+
+    static List<String> tickets = new ArrayList<>();
+
+    static {
+        for (int i = 0; i < 1000; i++) {
+            tickets.add("票-" + i);
+        }
+    }
+
+    public static void main(String[] args) {
+        for (int i = 0; i < 10; i++) {
+            new Thread(() -> {
+                while (tickets.size() > 0) {
+                    // sychronized 保证了原子性
+                    synchronized (tickets) {
+                        System.out.println("销售了：" + tickets.remove(0));
+                    }
+                }
+            }).start();
+        }
+    }
+}
+/*
+     可以解决问题，但是效率不高
+ */
+使用同步队列：
+public class TicketSeller4 {
+
+    static Queue<String> queue = new ConcurrentLinkedQueue<>();  // 底层是CAS操作
+
+    static {
+        for (int i = 0; i < 1000; i++) {
+            queue.add("票-" + i);
+        }
+    }
+
+    public static void main(String[] args) {
+        for (int i = 0; i < 10; i++) {
+            new Thread(() -> {
+                while (true) {
+                    String t = queue.poll();    // 取出头，拿不到就是空值
+                    if (t == null) {            // 判断了之后没有进行读写操作
+                        break;
+                    }
+                    else System.out.println("销售了：" + t);
+                }
+            }).start();
+        }
+    }
+}
+/*
+      可以解决问题，效率可以
+ */
+6.7、并发容器
+6.7.1、ConcurrentMap
+ConcurrentMap 源码分析：
+https://www.cnblogs.com/sanzao/p/10792546.html
+https://blog.csdn.net/ddxd0406/article/details/81389583
+
+public class ConCurrentHashMapTest {
+    public static void main(String[] args) {
+
+        Map<String, String> map = new HashMap<>();
+        testMap(map, "hashMap");
+
+        // 耗时423  每次加锁，都锁一个对象
+        Map<String, String> hashTable = new Hashtable<>();
+        testMap(hashTable, "Hashtable");
+        // 耗时309，加的是分段所，将容器分为16段，每段都有一个锁 segment; 
+        // 1.8以后 使用 Node + synchronized+CAS
+        Map<String, String> map2 = new ConcurrentHashMap<>();
+        testMap(map2, "ConcurrentHashMap");
+        // 耗时317  高并发且排序，插入效率较低，但是读取很快
+        Map<String, String> map3 = new ConcurrentSkipListMap<>();
+        testMap(map3, "ConcurrentSkipListMap");
+    }
+
+    public static void testMap(Map<String, String> map, String mapType) {
+
+        int size = 100000;
+        Random r = new Random();
+        Thread[] ths = new Thread[100];
+        // 启动一个门闩，每有一个线程退出，门闩就减1，直到所有线程结束，门闩打开，主线程结束
+        CountDownLatch latch = new CountDownLatch(ths.length);
+
+        long start = System.currentTimeMillis();
+        // 创建100个线程，每个线程添加100000个元素到map，并启动这些线程
+        for (int i = 0; i < ths.length; i++) {
+            ths[i] = new Thread(() -> {
+                for (int j = 0; j < size; j++) {
+                    map.put("key" + j, "value" + j);
+                }
+                latch.countDown();
+            }, "t" + i);
+        }
+        Arrays.asList(ths).forEach(Thread::start);
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        long end = System.currentTimeMillis();
+        System.out.println(mapType + " 耗时:" + (end - start) + " Map大小：" + map.size());
+    }
+}
+
+hashMap 耗时:421 Map大小：377322
+Hashtable 耗时:1230 Map大小：100000
+ConcurrentHashMap 耗时:319 Map大小：100000
+ConcurrentSkipListMap 耗时:518 Map大小：100000
+6.7.2、CopyOnWriteArrayList
+/**
+ * 写时复制List：
+ * 当发生写操作(添加、删除、修改)时，容器就会复制原有容器一份然后对新操作进行写操作
+* 然后再将引用转向新的容器
+ * 好处：保证读操作不需要锁也能正常访问，是一种读写分离的实现方式
+ * 缺点：写的效率极低，特定场景下才会使用到
+ */
+public class CopyOnWriteArrayListTest {
+    static volatile List<String> list = new CopyOnWriteArrayList<>();  // 写速极慢，读取快
+    static volatile List<String> arrayList = new ArrayList<>();             // 这个会出现并发问题
+    static volatile List<String> vectorList = new Vector<>();
+    public static void main(String[] args) {
+        new Thread() {
+            @Override
+            public void run() {
+                writeList(list);
+            }
+        }.start();
+        new Thread() {
+            @Override
+            public void run() {
+                writeList(arrayList);
+            }
+        }.start();
+
+        new Thread() {
+            @Override
+            public void run() {
+                writeList(vectorList);
+            }
+        }.start();
+
+        new Thread() {
+            @Override
+            public void run() {
+                readList(list);
+            }
+        }.start();
+
+        new Thread() {
+            @Override
+            public void run() {
+                readList(arrayList);
+            }
+        }.start();
+        new Thread() {
+            @Override
+            public void run() {
+                readList(vectorList);
+            }
+        }.start();
+    }
+
+    public static void writeList(List<String> list) {
+        int count = 5000;
+        Thread[] ths = new Thread[100];
+        for (int i = 0; i < ths.length; i++) {
+            Runnable task = () -> {
+                for (int j = 0; j < count; j++) {
+                    try {
+                        list.add("a" + j);
+                    } catch (Exception e) {
+                    }
+                }
+            };
+            ths[i] = new Thread(task);
+        }
+        long start = System.currentTimeMillis();
+        Arrays.asList(ths).forEach(Thread::start);
+        Arrays.asList(ths).forEach(t -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+        long end = System.currentTimeMillis();
+        System.out.println(list.getClass().getName() + " 写入耗时：" + (end - start) / 1000 + "秒 list大小:" + list.size());
+    }
+
+    static void readList(List<String> list) {
+
+        Thread[] ths = new Thread[100];
+        for (int i = 0; i < ths.length; i++) {
+            Runnable task = () -> {
+                for (int j = 0; j < list.size(); j++) {
+                    list.get(j);
+                }
+            };
+            ths[i] = new Thread(task);
+        }
+        long start = System.currentTimeMillis();
+        Arrays.asList(ths).forEach(Thread::start);
+        Arrays.asList(ths).forEach(t -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+        long end = System.currentTimeMillis();
+        System.out.println(list.getClass().getName() + " 读取耗时：" + (end - start) / 1000 + "秒 list大小:" + list.size());
+    }
+}
+6.7.3、SynchronizedList
+/**
+ * 将普通集合变为同步集合的工具方法
+ */
+public class T03_SynchronizedList {
+    public static void main(String[] args) {
+        List<String> list = new ArrayList<>();
+        // 返回的实例，每个方法都加了一个互斥锁
+        List<String> syncList = Collections.synchronizedList(list);
+    }
+}
+6.7.4、ConcurrentQueue
+/**
+ * 同步队列，ConcurrentQueue
+ */
+public class ConcurrentQueueTest {
+
+    public static void main(String[] args) {
+        Queue<String> queue = new ConcurrentLinkedQueue<>();     // LinkedQueue，无界队列
+
+        for (int i = 0; i < 10; i++) {
+            // 有返回值，返回false代表没有加入成功，true 代表成功，并且此方法不会阻塞
+            queue.offer("a" + i);           // 添加元素  
+        }
+
+        System.out.println(queue);
+        System.out.println(queue.size());
+
+        System.out.println(queue.poll());     // 取出队头
+        System.out.println(queue.size());
+
+        System.out.println(queue.peek());    // 取出队头，但是不删除队头
+        System.out.println(queue.size());
+
+        // 双端队列 Deque 发音： dai ke
+        //Deque<String> deque = new ConcurrentLinkedDeque<>();
+        //deque.addFirst();
+        //deque.addLast();
+        //deque.pollFirst();
+        //deque.pollLast();
+        //deque.peekFirst();
+        //deque.peekLast();
+    }
+}
+6.7.5、LinkedBlockedQueue
+/**
+ * 使用阻塞同步队列 LinkedBlockingQueue 完成生产者消费者模式
+ * 使用场景较多。
+ */
+public class LinkedBlockingQueueTest {
+
+    public static void main(String[] args) {
+
+        BlockingQueue<String> queue = new LinkedBlockingQueue<>();
+
+        // 启动生产者线程生产
+        new Thread(() -> {
+            for (int j = 0; j < 100; j++) {
+                try {
+// put 方法，给容器添加元素，如果容器已经满了，则会阻塞等待
+                    queue.put("aaa" + j);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, "p").start();
+
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // 启用消费者线程消费
+        for (int i = 0; i < 5; i++) {
+            new Thread(() -> {
+                while (true) {
+                    try {
+// 从队列中拿数据，如果空了，则会阻塞等待
+                        System.out.println(Thread.currentThread().getName() + ":" + queue.take());                   
+ } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, "c" + i).start();
+        }
+    }
+}
+6.7.6、ArrayBlockedQueue
+/**
+ * 使用阻塞有界同步队列 ArrayBlockingQueue 完成生产者消费者模式
+ */
+public class T06_ArrayBlockingQueue {
+
+    public static void main(String[] args) throws InterruptedException {
+
+        BlockingQueue queue = new ArrayBlockingQueue<>(10);
+
+        for (int i = 0; i < 10; i++) {
+            queue.put("a" + i);
+        }
+        // queue.put("a11");   // 满了机会等待，程序阻塞
+        // queue.add("a11");   // 会抛出异常
+        // System.out.println(queue.offer("a11"));         // 会返回false
+        // 会等待1s,返回false, 如果1s内有空闲,则添加成功后返回true
+        System.out.println(queue.offer("a11", 1, TimeUnit.SECONDS));
+    }
+}
+6.7.7、DelayQueue
+/**
+ * DelayQueue,
+ * 出队有个时间限制, 每个元素有一个等待时间, 可以按照等待时间排序元素
+ * DelayQueue元素必须为 Delayed类型的,即必须设置元素的等待时间
+ *
+ * 用途，定时执行任务
+ */
+public class T07_DelayQueue {
+
+    public static void main(String[] args) throws InterruptedException {
+        long timestamp = System.currentTimeMillis();
+        MyTask myTask1 = new MyTask(timestamp + 1000);           // 1s后执行
+        MyTask myTask2 = new MyTask(timestamp + 2000);
+        MyTask myTask3 = new MyTask(timestamp + 1500);
+        MyTask myTask4 = new MyTask(timestamp + 2500);
+        MyTask myTask5 = new MyTask(timestamp + 500);
+
+        DelayQueue<MyTask> tasks = new DelayQueue<>();
+        tasks.put(myTask1);
+        tasks.put(myTask2);
+        tasks.put(myTask3);
+        tasks.put(myTask4);
+        tasks.put(myTask5);
+
+        System.out.println(tasks);       // 确实按照我们拍的顺序执行的
+
+        for (int i = 0; i < tasks.size(); i++) {
+            System.out.println(tasks.take());
+        }
+    }
+
+    static class MyTask implements Delayed {
+        private long runningTime;
+
+        public MyTask(long runTime) {
+            this.runningTime = runTime;
+        }
+
+        // 这是每个元素的等待时间, 越是后加入的元素,时间等待的越长
+        @Override
+        public long getDelay(TimeUnit unit) {
+            return unit.convert(runningTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+        }
+
+        // 这是排序规律, 执行等待时间最短的排在上面
+        @Override
+        public int compareTo(Delayed o) {
+            return (int) (o.getDelay(TimeUnit.MILLISECONDS) - this.getDelay(TimeUnit.MILLISECONDS));
+        }
+
+        @Override
+        public String toString() {
+            return runningTime + "";
+        }
+    }
+}
+6.7.8、TransferQueue
+/**
+ * TransferQueue,
+ * 拥有transfer方法，传输，当transfer一个元素时，如果有take方法阻塞等待获取元素
+* 则不向队列中保存，直接给等待的take方法去使用
+ * 如果没有消费者线程，transfer线程将会阻塞
+ *
+ * 情景：如果将元素放入队列，再拿给消费者线程，太慢了，如果需要的效率更高，可以使用TransferQueue
+* 来解决更高的并发
+ *
+ */
+public class T08_TransferQueue {
+
+    public static void main(String[] args) {
+
+        TransferQueue mq = new LinkedTransferQueue();
+
+        // 先让消费者线程等待
+        new Thread(() -> {
+            try {
+                System.out.println(mq.take());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+
+        // 再让生产者线程生产
+        try {
+// put add 都不会阻塞，会添加到容器中，只有transfer才有此种功能（等待消费者直接获取），
+// 所以transfer是有容量的
+            mq.transfer("aaa");          
+} catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        /*new Thread(() -> {
+            try {
+                System.out.println(mq.take());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();*/
+    }
+}
+6.7.9、SynchronizedQueue
+/**
+ * SynchronousQueue,
+ * 一种特殊的TransferQueue，容量为0
+ *
+ * TransferQueue是有容量的，可以通过add/put等方法向队列中加入元素
+ * 但是SynchronousQueue则没有
+ */
+public class T09_SynchronousQueue {
+
+    public static void main(String[] args) throws InterruptedException {
+
+        BlockingQueue queue = new SynchronousQueue();
+
+        new Thread(() -> {
+            try {
+                System.out.println(queue.take());   // 取不到就阻塞
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+
+        //queue.add("aaa"); // IllegalStateException: Queue full  抛出异常，因为没有容量
+        queue.put("aaa");  // 会阻塞等待消费者线程获取,内部是transfer
+
+        System.out.println(queue.size());    // 长度为0
+    }
+}
+6.7.10、并发容器总结
+Map/Set:
+    无并发:
+        HashMap
+        TreeMap
+        LinkedHashMap
+    低并发:
+        HashTable
+        Collections.synchronizedMap()
+    高并发:
+        ConcurrentHashMap - 并发高
+        ConcurrentSkipListMap - 并发高 且 需要排序
+队列:
+    无并发:
+        ArrayList
+        LinkedList
+    低并发:
+        Vector
+        Collections.synchronizedList()
+    写少读多:
+        CopyOnWriteList
+    高并发
+        Queue：
+            ConcurrentLinkedQueue 非阻塞同步队列
+            BlockQueue
+                LinkedBlockingQueue
+                ArrayBlockingQueue
+                TransferQueue
+                SynchronousQueue
+            DelayQueue
+6.8、线程池
+在Java中，如果每个请求到达就创建一个新线程，开销是相当大的。在实际使用中，创建和销毁线程花费的时间和消耗的系统资源都相当大，甚至可能要比在处理实际的用户请求的时间和资源要多的多。除了创建和销毁线程的开销之外，活动的线程也需要消耗系统资源。如果在一个JVM里创建太多的线程，可能会使系统由于过度消耗内存或“切换过度”而导致系统资源不足。
+通常，线程池都是通过线程池工厂创建，然后调用线程池中的方法获取线程，再通过线程执行任务方法。
+6.8.1、Executor
+/**
+ * 作用, Executor 可以传入一个Runnable接口, runnable接口用于定义一项任务,
+ * 将任务传递给Executor后, 由 Executor.execute() 方法定义如何执行任务
+ */
+public class T01_MyExecutor implements Executor {
+    public static void main(String[] args) {
+        new T01_MyExecutor().execute(()-> System.out.println("hello executor"));
+    }
+
+    @Override
+    public void execute(Runnable command) {
+        command.run();
+        // new Thread(command).star();
+    }
+}
+6.8.2、ExecutorService
+ExecutorService 线程池类
+/**
+ * service 一般都是一些后台线程, 跑在后台提供服务, 这里代表执行器服务
+ * ExecutorService就是这种线程, 启动后一直在后台等待任务扔到容器中执行.
+ *
+ * Future submit(Runnable task): 提交Runnable任务以执行并返回表示该任务的Future。
+ * Future submit(Runnable, result):
+ * Future submit(Callable task): 提交一个有返回值的callable任务,并将返回值作为future对象包装返回
+ *
+ * execute 和 submit 的区别:
+ * 没有本质区别,只不过execute只能执行Runnable接口
+ */
+public class T02_MyExecutorService  {
+    ExecutorService executorService = null;
+}
+使用Runnable接口创建线程池：
+public  class Test{
+    public static void main(String[] args) {
+        // 创建线程池对象
+        ExecutorService service = Executors.newFixedThreadPool( 2 );   //包含2个线程对象
+        // 创建Runnable实例对象
+        MyRunnable r = new MyRunnable();
+        // 从线程池中获取线程对象,然后调用MyRunnable中的run()
+        service.submit( r );
+        // 再获取个线程对象，调用MyRunnable中的run()
+        service.submit( r );
+        service.submit( r );
+        // 注意：submit方法调用结束后，程序并不终止，是因为线程池控制了线程的关闭。
+// 将使用完的线程又归还到了线程池中
+        // 关闭线程池
+        // service.shutdown();
+    }
+}
+class MyRunnable implements Runnable{
+    @Override
+    public void run() {
+        System.out.println("我要一个教练");
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("教练来了： " +Thread.currentThread().getName());
+        System.out.println("教我游泳,交完后，教练回到了游泳池");
+    }
+}
+/*
+我要一个教练 
+我要一个教练 
+教练来了： pool-1-thread-2 
+教练来了： pool-1-thread-1 
+教我游泳,交完后，教练回到了游泳池 
+我要一个教练 
+教我游泳,交完后，教练回到了游泳池 
+教练来了： pool-1-thread-1 
+教我游泳,交完后，教练回到了游泳池
+*/
+6.8.3、Callable
+/**
+ * Callable
+ * 类似Runnable, 执行Runnable任务时,实际调用的是run方法
+ * 执行Callable任务时,实际调用的是 call方法
+ *
+ * 区别:
+ *  1. callable 有返回值,线程运行结束后需要返回值,则需要callable
+ *  2. callable可以抛出异常,而Runnable不能抛出异常,必须自己处理
+ */
+public class T03_Callable {
+    Callable callable;
+}
+使用Callable接口创建线程池：
+public class App 
+{
+    public static void main( String[] args )
+    {
+        // 创建线程池对象
+        ExecutorService service = Executors.newFixedThreadPool( 2 );   //包含2个线程对象
+        // 创建Runnable实例对象
+        MyCallable r = new MyCallable ();
+        // 从线程池中获取线程对象,然后调用MyRunnable中的run()
+        service.submit( r );
+        // 再获取个线程对象，调用MyRunnable中的run()
+        service.submit( r );
+        service.submit( r );
+        // 注意：submit方法调用结束后，程序并不终止，是因为线程池控制了线程的关闭。
+        // 将使用完的线程又归还到了线程池中
+        // 关闭线程池
+         service.shutdown();
+    }
+}
+class MyCallable implements Callable {
+    @Override
+    public Object call() throws Exception {
+        System.out.println("我要一个教练");
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("教练来了： " +Thread.currentThread().getName());
+        System.out.println("教我游泳,交完后，教练回到了游泳池");
+        return null;
+    }
+}
+/*
+我要一个教练 
+我要一个教练 
+教练来了： pool-1-thread-2 
+教练来了： pool-1-thread-1 
+教我游泳,交完后，教练回到了游泳池 
+我要一个教练 
+教我游泳,交完后，教练回到了游泳池 
+教练来了： pool-1-thread-1 
+教我游泳,交完后，教练回到了游泳池
+*/
+6.8.4、Executors
+/**
+ * 线程池创建工厂类
+ */
+public class T04_Executors {
+    Executors executors;
+}
+总结：
+Executor 用于执行某个任务
+ExecutorService 后台一直运行的服务即线程池类，等待任务抛入(submit),并执行,抛入的任务  
+又分为两种: Callable 有返回值；Runnable 没有返回值
+Executors 是一个用于操作上面对象的工具类和工厂类，线程池创建工厂类
+6.8.5、ThreadPool
+public class T05_ThreadPool {
+
+    public static void main(String[] args) throws InterruptedException {
+        // 固定长度的线程池
+        ExecutorService service = Executors.newFixedThreadPool(5);
+        // 执行六个任务,  在只有五个固定容量的线程池中
+        for (int i = 0; i < 6; i++) {
+            service.execute(() -> {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName());
+            });
+        }
+        // [Running, pool size = 5, active threads = 5, queued tasks = 1, completed tasks = 0]
+        System.out.println( service );
+        // 内部一般是BlockingQueue
+        // pool size =  5  线程池的容量
+        // active thread = 5 激活的线程队列长度
+        // queued tasks = 1 等待处理任务长度
+        // completed task = 0 完成执行的任务数量
+
+        // 关闭线程池，停止接收新的任务并等待已经提交的任务（包括提交正在执行和提交未执行）执  
+// 行完成，当所有提交任务提交完毕，线程池即被关闭 
+        service.shutdown();                      // 未执行完毕,不会停止,只会进入停止中状态
+        System.out.println( service.isTerminated() );   // false 是否结束
+        System.out.println( service.isShutdown() );    // true 状态是否关闭
+        // [Shutting down, pool size = 5, active threads = 5, queued tasks = 1, completed tasks = 0]
+        System.out.println( service );
+
+        TimeUnit.SECONDS.sleep( 5 );     // 5s 后肯定执行完成了
+
+        System.out.println( service.isTerminated() );  // true
+        System.out.println( service.isShutdown() );   // true
+        // [Terminated, pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 6]
+        System.out.println(service);
+        // 线程池中维护了两个任务队列
+        // 1. 未执行的任务队列
+        // 2. 已执行的任务队列
+    }
+}
+6.8.6、Future
+public class T06_Future {
+
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+
+        // 未来任务, 既是Runnable 也是 Future
+        FutureTask<Integer> task = new FutureTask<>(() -> {
+            TimeUnit.MILLISECONDS.sleep(500);
+            return 100;
+        });
+        new Thread(task).start();
+
+        // 阻塞等待任务执行完成, 获取到返回值
+        System.out.println(task.get());
+
+        System.out.println("-------------------------------");
+
+        //********************************
+        // 使用ExecutorService的submit替代FutureTask
+        ExecutorService service = Executors.newFixedThreadPool(5);
+        Future<Integer> result = service.submit(() -> {
+            TimeUnit.MILLISECONDS.sleep(500);
+            return 1;
+        });
+        System.out.println(result.isDone()); // false 执行未完毕
+        System.out.println(result.get());    // 1
+        System.out.println(result.isDone()); // true  执行已完毕
+        System.out.println(result.get());    // 一直等待
+        System.out.println(service.shutdownNow()); // 立即等待
+    }
+6.8.7、并行计算
+计算两个数的和：
+public  class Test{
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
+        //创建线程池对象
+        ExecutorService threadPool = Executors.newFixedThreadPool(2);
+
+        //创建一个Callable接口子类对象
+        MyCallable c = new MyCallable(100, 200);
+        MyCallable c2 = new MyCallable(10, 20);
+
+        // 获取线程池中的线程，调用Callable接口子类对象中的call()方法, 完成求和操作
+        // <Integer> Future<Integer> submit(Callable<Integer> task)
+        // Future 结果对象
+        Future<Integer> result = threadPool.submit( c );
+        Integer sum = result.get();
+        System.out.println("sum=" + sum);
+        //再演示
+        result = threadPool.submit( c2 );
+        sum = result.get();
+        System.out.println("sum=" + sum);
+        //关闭线程池(可以不关闭)
+    }
+}
+class MyCallable implements Callable<Integer> {
+    //成员变量
+    int x = 5;
+    int y = 3;
+    //构造方法
+    public MyCallable(){
+    }
+    public MyCallable(int x, int y){
+        this.x = x;
+        this.y = y;
+    }
+    @Override
+    public Integer call() throws Exception {
+        return x+y;
+    }
+}
+/*
+	300
+	30
+*/
+线程池并行计算1-200000之间的质数
+public class T07_ParallelComputing {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        long start = System.currentTimeMillis();
+        List<Integer> result = getPrime(1, 200000);
+        long end = System.currentTimeMillis();
+        System.out.println(end - start);         // 使用单线程计算的时间
+
+        ExecutorService service = Executors.newFixedThreadPool( 4 );   // 使用4个线程进行计算
+// 这里为什么不均分? 因为数字越大, 质数的数量就越多
+        ComputeTask t1 = new ComputeTask(1, 80000);
+        ComputeTask t2 = new ComputeTask(80001, 130000);
+        ComputeTask t3 = new ComputeTask(130001, 170000);
+        ComputeTask t4 = new ComputeTask(170001, 200000);          
+        // 提交任务给ExecutorService执行
+        Future<List<Integer>> f1 = service.submit( t1 );
+        Future<List<Integer>> f2 = service.submit( t2 );
+        Future<List<Integer>> f3 = service.submit( t3 );
+        Future<List<Integer>> f4 = service.submit( t4 );
+        // 执行开始
+        start = System.currentTimeMillis();
+        f1.get();
+        f2.get();
+        f3.get();
+        f4.get();
+        end = System.currentTimeMillis();
+        System.out.println(end - start);     // 计算需要的时间
+        service.shutdown();
+    }
+    static class ComputeTask implements Callable<List<Integer>> {
+        private int start, end;
+        ComputeTask (int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+        @Override
+        public List<Integer> call() throws Exception {
+            return getPrime(start, end);
+        }
+    }
+    static boolean isPrime(int num) {      // 判断是否是质数
+        for (int i = 2; i < num / 2; i++) {
+            if (num % i == 0) return false;
+        }
+        return true;
+    }
+    /**
+     * 返回指定范围的质数列表
+     */
+    static List<Integer> getPrime(int start, int end) {
+        List<Integer> list = new ArrayList<>();
+        for (int i = 0; i < end; i++) {
+            if (isPrime(i)) list.add(i);
+        }
+        return list;
+    }
+}
+6.8.8、CacheThreadPool
+可缓存的线程，当有个请求进入线程池内, 线程池将会启用一个线程，当再次有个请求进入线程池内, 并且上个线程未结束, 仍然会启用一个线程，当有线程执行完毕后,这个线程不会被清除, 而是被缓存,当有请求进入时, 直接使用缓存线程调用，跟 fixedThreadPool 类似, 只不过没有上限(最多Integer最大值), 是一种弹性操作，当线程一直不被使用, 缓存最多持续1分钟(AliveTime默认值),就会被线程池销毁
+public class T08_CachedThreadPool {
+
+    public static void main(String[] args) {
+        ExecutorService service = Executors.newCachedThreadPool();
+        // pool size 为0
+        // [Running, pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0]
+        System.out.println(service); 
+        for (int i = 0; i < 2; i++) {
+            service.execute(() -> {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName());
+            });
+        }
+        // pool size 变为2
+// [Running, pool size = 2, active threads = 2, queued tasks = 0, completed tasks = 0]
+        System.out.println(service); 
+        try {
+            TimeUnit.SECONDS.sleep(80); // 最多持续1分钟,这里sleep80s
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        // pool size 变为0
+// [Running, pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 2]
+        System.out.println(service); 
+    }
+}
+6.8.9、SingleThreadPool
+线程池中只有一个线程，作用：保证线程执行的时序性
+public class T09_SingleThreadPool {
+    public static void main(String[] args) {
+        ExecutorService service = Executors.newSingleThreadExecutor();
+        for (int i = 0; i < 5; i++) {
+            final int j = i;
+            service.execute(() -> {
+                System.out.println(j + " " + Thread.currentThread().getName());
+            });
+        }
+    }
+}
+6.8.10、ScheduleThreadPool
+/*
+ * Scheduled: 计划中的,定时的
+ * 执行定时的任务,类似Delay, 可以替代Timer
+ */
+public class T10_ScheduledPool {
+
+    public static void main(String[] args) {
+        ScheduledExecutorService service = Executors.newScheduledThreadPool(4);
+        // 使用固定的频率执行某个任务
+        // 四个参数
+        // command: 执行的任务
+        // initialDelay: 第一次执行延时多久执行
+        // period: 每隔多久执行一次这个任务
+        // unit: 时间单位
+        service.scheduleAtFixedRate(() -> {
+            try {
+                TimeUnit.MILLISECONDS.sleep(new Random().nextInt(1000));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName());
+        }, 0, 500, TimeUnit.MILLISECONDS);  
+// 每隔500ms打印一下线程名称
+        // 线程执行1000ms,而每sleep 500 就要新启动一个线程
+        // 上个线程未执行完毕,会启用新的线程执行
+        // 如果线程池已满,只有延时
+    }
+}
+6.8.11、WorkStealingPool
+工作窃取线程池，假设共有三个线程同时执行A,B,C任务，当A和B线程池尚未处理完任务，而C已经处理完毕，则C线程会从A或者B中窃取任务执行
+public class T11_WorkStealingPool {
+    public static void main(String[] args) throws IOException {
+        // CPU 核数
+        System.out.println(Runtime.getRuntime().availableProcessors());
+        // workStealingPool 会自动启动cpu核数个线程去执行任务
+        ExecutorService service = Executors.newWorkStealingPool();
+        service.execute(new R(1000));  
+// 我的cpu核数为12 启动13个线程,其中第一个是1s执行完毕,其余都是2s执行完毕,
+        // 有一个任务会进行等待,当第一个执行完毕后,会再次偷取第十三个任务执行
+        for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
+            service.execute(new R(2000));
+        }
+        // 因为work stealing 是deamon线程,即后台线程,精灵线程,守护线程
+        // 所以当main方法结束时, 此方法虽然还在后台运行,但是无输出
+        // 可以通过对主线程阻塞解决
+        System.in.read();
+    }
+    static class R implements Runnable {
+        int time;
+        R(int time) {
+            this.time = time;
+        }
+        @Override
+        public void run() {
+            try {
+                TimeUnit.MILLISECONDS.sleep(time);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName() + "  " + time);
+        }
+    }
+}
+6.8.12、WorkStealingPool
+/**
+ * T12_ForkJoinPool  分而治之
+ * Fork: 分叉
+ * Join: 合并
+ *
+ * 将一个任务拆分多个任务执行(可以无限切分),然后将结果合并
+ *
+ * 比如大量的并行计算, 如下: 求100_0000个数字之和, 使用多线程
+ */
+public class T12_ForkJoinPool {
+
+    static int[] nums = new int[100_0000];
+    static final int MAX_NUM = 5_0000; // 每个线程最多可以运行5万个数字相加
+    static Random random = new Random();
+
+    // 初始化这100_000个数字, 每个数字范围在100之内
+    static {
+        for (int i = 0; i < nums.length; i++) {
+            nums[i] = random.nextInt(100);
+        }
+        // 所有数字和, 事先计算:
+        //System.out.println(Arrays.stream(nums).sum()); // 使用单线程stream api 进行求和
+    }
+    /**
+     * RecursiveAction: 递归操作 没有返回值
+     * RecursiveTask: 递归操作,有返回值
+     */
+    static class AddTask extends RecursiveAction {
+        int start, end;
+        AddTask(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        @Override
+        protected void compute() {
+            // 进行计算
+            // 如果计算的数的和的范围 小于 MAX_NUM, 进行计算,否则进行 fork
+            if (end - start <= MAX_NUM) {
+                long sum = 0;
+                for (int i = start; i < end; i++) {
+                    sum += nums[i];
+                }
+                System.out.println("sum = " + sum);
+            } else {
+                int middle = (end - start) / 2;
+                AddTask subTask1 = new AddTask(start, middle);
+                AddTask subTask2 = new AddTask(middle, end);
+                subTask1.fork();
+                subTask2.fork();
+            }
+        }
+    }
+    static class AddTask2 extends RecursiveTask<Long> {
+        int start, end;
+        AddTask2(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+        @Override
+        protected Long compute() {
+            // 进行计算
+            // 如果计算的数的和的范围 小于 MAX_NUM, 进行计算,否则进行 fork
+            if (end - start <= MAX_NUM) {
+                long sum = 0;
+                for (int i = start; i < end; i++) {
+                    sum += nums[i];
+                }
+                return sum;
+            } else {
+                int middle = start + (end - start) / 2; 
+// 注意这里，如果有问题，会抛出异常
+                AddTask2 subTask1 = new AddTask2(start, middle);
+                AddTask2 subTask2 = new AddTask2(middle, end);
+                subTask1.fork();
+                subTask2.fork();
+                return subTask1.join() + subTask2.join();
+            }
+        }
+    }
+    // 运行
+    public static void main(String[] args) throws IOException {
+        ForkJoinPool fjp = new ForkJoinPool();
+        AddTask2 task = new AddTask2(0, nums.length);
+        fjp.execute(task);
+        System.out.println(task.join());
+        //System.in.read();
+    }
+}
+6.8.13、ThreadPoolExecutor
+用给定的参数创建新的ThreadPoolExecutor
+参数：
+corePoolSize               线程池核心线程数，最小线程数
+    maximumPoolSize          最大线程数
+    keepAlive                 线程空闲后存活时间， 0代表永远不会消失
+    timeUnit                  时间的单位
+    BlockingQueue workQueue  保持任务的队列，仅保持execute提交的Runnable任务
+
+/**
+ * ThreadPoolExecutor
+ * 线程池的实现原理，除了ForkJoinPool与WorkStealingPool线程池
+ * 其他线程池大部分线程池背后都是ThreadPoolExecutor
+ *
+ * 自定义线程池，ThreadPoolExecutor
+ */
+public class T13_ThreadPoolExecutor {
+    public static void main(String[] args) {
+
+    }
+}
+6.8.14、ParallelStreamAPI
+public class T14_ParallelStreamAPI {
+    public static void main(String[] args) {
+        List<Integer> nums = new ArrayList<>();
+        Random random = new Random();
+        for (int i = 0; i < 1_0000; i++) {
+            nums.add(100_0000 + random.nextInt(100_0000));
+        }
+        long start, end;
+        start = System.currentTimeMillis();
+        nums.stream().forEach(v -> isPrime(v));
+        end =System.currentTimeMillis();
+        System.out.println(end - start);
+        // 使用parallel stream api
+        start = System.currentTimeMillis();
+        nums.parallelStream().forEach(v -> isPrime(v));
+        end =System.currentTimeMillis();
+        System.out.println(end - start);
+    }
+    static boolean isPrime(int num) {
+        for (int i = 2; i < num / 2; i++) {
+            if (num % i == 0) return false;
+        }
+        return true;
+    }
+}
+
+
