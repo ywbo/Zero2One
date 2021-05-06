@@ -1,7 +1,7 @@
 ## 网站配置
 logo: 
   ## 网站名称
-  title: "springboot-v2"
+  title: "墨羽"
   ## 网站图标
   image: "/static/admin/images/logo.png"
 ## 菜单配置

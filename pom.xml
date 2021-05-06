@@ -13,7 +13,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>v2</name>
 	<packaging>war</packaging>
-    <description>springboot-v2-pear</description>
+    <description>MoYu-pear</description>
 
     <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -76,18 +76,18 @@
 			<version>1.2.5</version>
 		</dependency>
 		<!-- mysql驱动7.0-->
-		<dependency>
+		<!--<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-		</dependency>
+		</dependency>-->
 
-		<!-- mysql驱动8.0
+		<!-- mysql驱动8.0 -->
 		 <dependency>
 		 	<groupId>mysql</groupId>
 		 	<artifactId>mysql-connector-java</artifactId>
 			<version>8.0.11</version>
 		 </dependency>
-		 -->
+
 		<!--druid 数据源监控-->
 		<!-- https://mvnrepository.com/artifact/com.alibaba/druid-spring-boot-starter -->
 		<dependency>

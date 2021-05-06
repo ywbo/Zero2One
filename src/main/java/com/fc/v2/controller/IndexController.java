@@ -30,8 +30,8 @@ public class IndexController extends BaseController{
 	public String index(ModelMap map) {
 		
 		//直接访问后台用
-		//return "redirect:/admin/login"
-    	return "index";
+		return "redirect:/admin/login";
+    	//return "index";
 	}
 	/**
 	 * 前台访问/index的get请求
@@ -44,7 +44,7 @@ public class IndexController extends BaseController{
 	@GetMapping("/index")
 	public String index2(ModelMap map) {
 		//直接访问后台用
-		//return "redirect:/admin/login"
-		return "index";
+		return "redirect:/admin/login";
+		// return "index";
 	}
 }
